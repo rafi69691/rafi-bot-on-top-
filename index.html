@@ -1,10 +1,8 @@
-
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RAFI BOT ON TOP V3</title>
+  <title>RAFI BOT ON TOP V4</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -37,6 +35,11 @@
     .signal {
       margin-top: 20px;
       font-size: 18px;
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
     }
   </style>
 </head>
@@ -46,54 +49,100 @@
     <input type="password" id="password" placeholder="Enter Password" />
     <button onclick="checkPassword()">Login</button>
     <p id="authMessage"></p>
-  </div>
-
-  <div class="container" id="botContainer" style="display:none;">
+  </div>  <div class="container" id="botContainer" style="display:none;">
     <h1>Signal Bot</h1>
     <label for="market">Select Market:</label>
-    <select id="market">
-      <option value="EURUSD">EURUSD</option>
-      <option value="GBPUSD">GBPUSD</option>
-      <option value="USDJPY">USDJPY</option>
-      <option value="OTC_EURUSD">OTC EURUSD</option>
-      <option value="OTC_GBPUSD">OTC GBPUSD</option>
-    </select>
+    <select id="market"></select><label for="timeframe">Timeframe:</label>
+<select id="timeframe">
+  <option value="1min">1 Minute</option>
+  <option value="5min">5 Minute</option>
+</select>
 
-    <label for="timeframe">Timeframe:</label>
-    <select id="timeframe">
-      <option value="1min">1 Minute</option>
-      <option value="5min">5 Minute</option>
-    </select>
+<button onclick="generateSignal()">Get Signal</button>
+<div class="signal" id="signalDisplay"></div>
 
-    <button onclick="generateSignal()">Get Signal</button>
-    <div class="signal" id="signalDisplay"></div>
-  </div>
+  </div><audio id="beep" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
 
   <script>
     const password = "RAFI ON TOP";
+    const adminOnly = true; // Toggle public access here
+
+    const markets = [
+      "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "NZDUSD",
+      "USD BRL OTC", "USD ARS OTC", "USD INR OTC", "USD BDT OTC"
+    ];
+
+    const lockedSignals = {};
+
+    function populateMarkets() {
+      const select = document.getElementById("market");
+      markets.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.innerText = m;
+        select.appendChild(opt);
+      });
+    }
 
     function checkPassword() {
       const input = document.getElementById("password").value;
       if (input === password) {
-        document.getElementById("authContainer").style.display = "none";
-        document.getElementById("botContainer").style.display = "block";
+        if (!adminOnly || confirm("Admin access granted. Proceed?")) {
+          document.getElementById("authContainer").style.display = "none";
+          document.getElementById("botContainer").style.display = "block";
+        }
       } else {
         document.getElementById("authMessage").innerText = "Wrong Password!";
       }
     }
 
+    function getCurrentTimeFormatted() {
+      const now = new Date();
+      return now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    function getExpireTimeFormatted(timeframe) {
+      const now = new Date();
+      const addMinutes = parseInt(timeframe);
+      now.setMinutes(now.getMinutes() + addMinutes);
+      return now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
     function generateSignal() {
       const market = document.getElementById("market").value;
       const timeframe = document.getElementById("timeframe").value;
+      const timeframeMin = parseInt(timeframe);
+      const currentTime = getCurrentTimeFormatted();
+
+      // Locking signal logic
+      if (lockedSignals[market] && lockedSignals[market].time === currentTime) {
+        displaySignal(lockedSignals[market].data);
+        return;
+      }
+
       const directions = ["BUY", "SELL"];
       const signal = directions[Math.floor(Math.random() * directions.length)];
-      const accuracy = Math.floor(Math.random() * 30) + 70;
-      const msg = `Market: ${market}
-Timeframe: ${timeframe}
-Signal: ${signal}
-Accuracy: ${accuracy}%`;
-      document.getElementById("signalDisplay").innerText = msg;
+      const accuracy = Math.floor(Math.random() * 10) + 90; // 90-99%
+      const expire = getExpireTimeFormatted(timeframeMin);
+      const signalText = `Market: ${market}\nTimeframe: ${timeframe}\nSignal: ${signal}\nAccuracy: ${accuracy}%\nStart: ${currentTime}\nExpire: ${expire}`;
+
+      lockedSignals[market] = {
+        time: currentTime,
+        data: signalText
+      };
+
+      displaySignal(signalText);
+      document.getElementById("beep").play();
     }
-  </script>
-</body>
+
+    function displaySignal(text) {
+      const signalDisplay = document.getElementById("signalDisplay");
+      signalDisplay.innerText = text;
+      signalDisplay.style.animation = "none";
+      signalDisplay.offsetHeight; // Force reflow
+      signalDisplay.style.animation = null;
+    }
+
+    populateMarkets();
+  </script></body>
 </html>
