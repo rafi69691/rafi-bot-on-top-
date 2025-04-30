@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RAFI BOT ON TOP V3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 0 15px #0ff;
+    }
+    h1 {
+      color: #0ff;
+      font-size: 24px;
+    }
+    select, input[type="password"], button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    .signal {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="authContainer">
+    <h1>RAFI BOT ON TOP</h1>
+    <input type="password" id="password" placeholder="Enter Password" />
+    <button onclick="checkPassword()">Login</button>
+    <p id="authMessage"></p>
+  </div>
+
+  <div class="container" id="botContainer" style="display:none;">
+    <h1>Signal Bot</h1>
+    <label for="market">Select Market:</label>
+    <select id="market">
+      <option value="EURUSD">EURUSD</option>
+      <option value="GBPUSD">GBPUSD</option>
+      <option value="USDJPY">USDJPY</option>
+      <option value="OTC_EURUSD">OTC EURUSD</option>
+      <option value="OTC_GBPUSD">OTC GBPUSD</option>
+    </select>
+
+    <label for="timeframe">Timeframe:</label>
+    <select id="timeframe">
+      <option value="1min">1 Minute</option>
+      <option value="5min">5 Minute</option>
+    </select>
+
+    <button onclick="generateSignal()">Get Signal</button>
+    <div class="signal" id="signalDisplay"></div>
+  </div>
+
+  <script>
+    const password = "RAFI ON TOP";
+
+    function checkPassword() {
+      const input = document.getElementById("password").value;
+      if (input === password) {
+        document.getElementById("authContainer").style.display = "none";
+        document.getElementById("botContainer").style.display = "block";
+      } else {
+        document.getElementById("authMessage").innerText = "Wrong Password!";
+      }
+    }
+
+    function generateSignal() {
+      const market = document.getElementById("market").value;
+      const timeframe = document.getElementById("timeframe").value;
+      const directions = ["BUY", "SELL"];
+      const signal = directions[Math.floor(Math.random() * directions.length)];
+      const accuracy = Math.floor(Math.random() * 30) + 70;
+      const msg = `Market: ${market}
+Timeframe: ${timeframe}
+Signal: ${signal}
+Accuracy: ${accuracy}%`;
+      document.getElementById("signalDisplay").innerText = msg;
+    }
+  </script>
+</body>
+</html>
